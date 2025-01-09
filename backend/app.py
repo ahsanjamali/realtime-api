@@ -14,6 +14,7 @@ import base64
 import os
 import orjson
 import logging
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -66,12 +67,12 @@ conversational_prompt = ChatPromptTemplate.from_messages([
 stuff_documents_chain = create_stuff_documents_chain(llm, conversational_prompt)
 conversation_rag_chain = create_retrieval_chain(retriever_chain, stuff_documents_chain)
 
-# Text-to-speech using ElevenLabs
-def text_to_speech_base64(text):
-    """Convert text to speech and return audio as base64."""
+# Text-to-speech using ElevenLabs (Now Asynchronous)
+async def text_to_speech_base64(text):
+    """Convert text to speech and return audio as base64 asynchronously."""
     try:
         response = elevenlabs_client.text_to_speech.convert(
-            voice_id="Xb7hH8MSUJpSbSDYk0k2",  # Replace with your desired voice ID
+            voice_id="Xb7hH8MSUJpSbSDYk0k2",
             model_id="eleven_multilingual_v2",
             text=text,
         )
@@ -89,9 +90,9 @@ def text_to_speech_base64(text):
 def jsonify_fast(data):
     return app.response_class(response=orjson.dumps(data), mimetype="application/json")
 
-# Generate endpoint
+# Generate endpoint (Updated to Async)
 @app.route('/generate', methods=['POST'])
-def generate():
+async def generate():
     try:
         user_input = request.json.get('input')
         app.logger.info(f"User input: {user_input}")
@@ -107,8 +108,8 @@ def generate():
         response_content = response.get("answer", "")
         chat_history.append(AIMessage(content=response_content))
 
-        # Generate audio
-        audio_base64 = text_to_speech_base64(response_content)
+        # Generate audio (Async Call)
+        audio_base64 = await text_to_speech_base64(response_content)
 
         # Return response and audio
         return jsonify_fast({
@@ -119,9 +120,10 @@ def generate():
         app.logger.error(f"Error in /generate endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Run Flask App with Gunicorn Timeout Adjustments
+# Run Flask App with proper Gunicorn Configuration
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
+
 
 
 
