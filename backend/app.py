@@ -9,12 +9,11 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from Template.promptAI import AI_prompt
-from elevenlabs import ElevenLabs
+import openai
 import base64
 import os
 import orjson
 import logging
-import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -26,8 +25,8 @@ CORS(app, resources={r"/*": {"origins": "https://usmle-conversationalassistant.o
 # Initialize logger
 logging.basicConfig(level=logging.INFO)
 
-# Initialize ElevenLabs client
-elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Initialize global variables
 chat_history = []
@@ -67,32 +66,21 @@ conversational_prompt = ChatPromptTemplate.from_messages([
 stuff_documents_chain = create_stuff_documents_chain(llm, conversational_prompt)
 conversation_rag_chain = create_retrieval_chain(retriever_chain, stuff_documents_chain)
 
-# Text-to-speech using ElevenLabs (Now Asynchronous)
-async def text_to_speech_base64(text):
-    """Convert text to speech and return audio as base64 asynchronously."""
+# Text-to-speech using OpenAI
+def text_to_speech(client, text, audio_path):
     try:
-        response = elevenlabs_client.text_to_speech.convert(
-            voice_id="Xb7hH8MSUJpSbSDYk0k2",
-            model_id="eleven_multilingual_v2",
-            text=text,
-        )
-        audio_data = bytearray()
-        for chunk in response:
-            if chunk:
-                audio_data.extend(chunk)
-
-        return base64.b64encode(audio_data).decode("utf-8")
+        response = client.audio.speech.create(model="tts-1", voice="nova", input=text)
+        response.stream_to_file(audio_path)
     except Exception as e:
-        app.logger.error(f"Error generating audio with ElevenLabs: {e}")
-        return None
+        print(f"An error occurred: {e}")
 
 # Efficient JSON response helper
 def jsonify_fast(data):
     return app.response_class(response=orjson.dumps(data), mimetype="application/json")
 
-# Generate endpoint (Updated to Async)
+# Generate endpoint
 @app.route('/generate', methods=['POST'])
-async def generate():
+def generate():
     try:
         user_input = request.json.get('input')
         app.logger.info(f"User input: {user_input}")
@@ -108,13 +96,14 @@ async def generate():
         response_content = response.get("answer", "")
         chat_history.append(AIMessage(content=response_content))
 
-        # Generate audio (Async Call)
-        audio_base64 = await text_to_speech_base64(response_content)
+        # Generate audio using OpenAI
+        audio_path = "output_audio.wav"
+        text_to_speech(client, response_content, audio_path)
 
-        # Return response and audio
+        # Return response and audio file path
         return jsonify_fast({
             "response": response_content,
-            "audio": audio_base64
+            "audio_path": audio_path
         })
     except Exception as e:
         app.logger.error(f"Error in /generate endpoint: {e}")
@@ -123,6 +112,7 @@ async def generate():
 # Run Flask App with proper Gunicorn Configuration
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
+
 
 
 
