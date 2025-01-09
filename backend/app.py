@@ -75,7 +75,11 @@ def text_to_speech_base64(text):
             model_id="eleven_multilingual_v2",
             text=text,
         )
-        audio_data = b"".join(chunk for chunk in response if chunk)
+        audio_data = bytearray()
+        for chunk in response:
+            if chunk:
+                audio_data.extend(chunk)
+
         return base64.b64encode(audio_data).decode("utf-8")
     except Exception as e:
         app.logger.error(f"Error generating audio with ElevenLabs: {e}")
@@ -91,7 +95,7 @@ def generate():
     try:
         user_input = request.json.get('input')
         app.logger.info(f"User input: {user_input}")
-        
+
         # Update chat history
         chat_history.append(HumanMessage(content=user_input))
 
@@ -115,7 +119,7 @@ def generate():
         app.logger.error(f"Error in /generate endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Run Flask App with hypercorn or similar
+# Run Flask App with Gunicorn Timeout Adjustments
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
 
