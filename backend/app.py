@@ -66,13 +66,16 @@ conversational_prompt = ChatPromptTemplate.from_messages([
 stuff_documents_chain = create_stuff_documents_chain(llm, conversational_prompt)
 conversation_rag_chain = create_retrieval_chain(retriever_chain, stuff_documents_chain)
 
-# Text-to-speech using OpenAI
-def text_to_speech(client, text, audio_path):
+# Text-to-speech using OpenAI with Base64 Return
+def text_to_speech_base64(client, text):
     try:
         response = client.audio.speech.create(model="tts-1", voice="nova", input=text)
-        response.stream_to_file(audio_path)
+        audio_data = response.content
+        audio_base64 = base64.b64encode(audio_data).decode("utf-8")
+        return audio_base64
     except Exception as e:
         print(f"An error occurred: {e}")
+        return None
 
 # Efficient JSON response helper
 def jsonify_fast(data):
@@ -96,14 +99,13 @@ def generate():
         response_content = response.get("answer", "")
         chat_history.append(AIMessage(content=response_content))
 
-        # Generate audio using OpenAI
-        audio_path = "output_audio.wav"
-        text_to_speech(client, response_content, audio_path)
+        # Generate audio using OpenAI and return base64
+        audio_base64 = text_to_speech_base64(client, response_content)
 
         # Return response and audio file path
         return jsonify_fast({
             "response": response_content,
-            "audio_path": audio_path
+            "audio": audio_base64
         })
     except Exception as e:
         app.logger.error(f"Error in /generate endpoint: {e}")
@@ -112,6 +114,7 @@ def generate():
 # Run Flask App with proper Gunicorn Configuration
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
+
 
 
 
