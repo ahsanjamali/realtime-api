@@ -1,0 +1,163 @@
+.nav {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    height: 75px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1); /* Subtle glassmorphic effect */
+    backdrop-filter: blur(20px); 
+    border: none; /* Removed border for cleaner look */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 1000; /* Kept it on top */
+}
+  
+.navLogo img {
+    height: 60px;
+}
+  
+.burgerMenu {
+    display: none;
+}
+  
+.burgerIcon {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transform: translateX(-135%);
+}
+  
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 4px 0;
+}
+  
+.dropdownMenu {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(20px); 
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobileNavItem {
+    padding: 10px 20px;
+    color: white;
+    font-size: 1rem;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: inline-block;
+    width: 100%;
+}
+  
+.mobileNavItem:hover {
+    background-color: white;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 30px; /* Clean hover effect */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.mobileNavItem.active {
+    background-color: white;
+    color: #007bff;
+    border-radius: 30px; 
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+.navItemContainer {
+    height: 75px;
+    width: 800px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+  
+.navItem.active {
+    color: #007bff;
+}
+  
+.navItem {
+    height: 75px;
+    padding: 0 20px;
+    text-align: center;
+    line-height: 75px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    color: white; 
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navItem:hover {
+    color: #007bff;
+    text-decoration: underline;
+    text-decoration-color: white;
+    text-underline-offset: 4px;
+}
+
+/* Removed side white boxes completely */
+.navItemActiveContainer,
+.navItemActive,
+.navItemActiveLeft,
+.navItemActiveRight {
+    display: none;
+}
+
+/* Active item effect (modern look) */
+.navItemActiveCenter {
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    font-weight: bold;
+    color: #007bff;
+    border: none;
+}
+
+/* Removed extra box shadows and side padding */
+.navItemActiveCopyLeft,
+.navItemActiveCopyCenter,
+.navItemActiveCopyRight {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .navItemContainer {
+        display: none;
+    }
+    .nav {
+        z-index: 1000;
+    }
+    .burgerMenu {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+

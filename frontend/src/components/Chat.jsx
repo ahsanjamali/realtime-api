@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ChatInputWidget from "./ChatInputWidget";
 import useAudioStore from "./store/audioStore";
-import "./Chat.css";
+import "../styles/Chat.css";
 
 const Chat = () => {
   const [chats, setChats] = useState([

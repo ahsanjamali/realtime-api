@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import useAudioStore from "./store/audioStore";
-import "./AudioVisualizer.css";
+import "../styles/AudioVisualizer.css";
 
 const AudioVisualizer = () => {
   const { audioUrl, stopAudio } = useAudioStore();

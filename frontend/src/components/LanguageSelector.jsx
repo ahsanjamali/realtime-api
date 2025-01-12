@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./LanguageSelector.css";
+import "../styles/LanguageSelector.css";
 
 const LanguageSelector = ({ selectedLanguage, setSelectedLanguage }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

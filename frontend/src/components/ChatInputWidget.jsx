@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
 import useLanguageStore from "./store/useLanguageStore"; // Import the Zustand store
-import "./ChatInputWidget.css";
+import "../styles/ChatInputWidget.css";
 
 const ChatInputWidget = ({ onSendMessage }) => {
   const [inputText, setInputText] = useState("");

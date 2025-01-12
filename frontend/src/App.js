@@ -1,9 +1,11 @@
+// App.js
 import React, { useEffect } from "react";
 import Title from "./components/Title";
 import LanguageSelector from "./components/LanguageSelector";
 import CustomOrb from "./components/CustomOrb";
 import AudioVisualizer from "./components/AudioVisualizer";
 import Chat from "./components/Chat";
+import Navbar from "./components/Navbar";
 import useLanguageStore from "./components/store/useLanguageStore";
 import useAudioStore from "./components/store/audioStore";
 import "./App.css";
@@ -21,6 +23,7 @@ function App() {
 
   return (
     <div className="App">
+      <Navbar />
       <Title />
       {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
       <Chat />
@@ -33,6 +36,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
