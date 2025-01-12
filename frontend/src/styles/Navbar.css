@@ -7,14 +7,27 @@
     background: rgba(255, 255, 255, 0.1); /* Subtle glassmorphic effect */
     backdrop-filter: blur(20px); 
     border: none; /* Removed border for cleaner look */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.006); 
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
     z-index: 1000; /* Kept it on top */
 }
-  
+.nav::before{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+    transition: .5s;
+}
+
+.nav:hover::before{
+    left: 100%;
+}
 .navLogo img {
     height: 60px;
 }
