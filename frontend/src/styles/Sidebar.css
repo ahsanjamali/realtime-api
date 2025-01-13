@@ -148,7 +148,26 @@
 .toggle-btn:hover {
     background: rgba(255, 255, 255, 0.3); 
 }
+.nav-link {
+    text-decoration: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
 
+
+
+/* ✅ Language Selector Footer Inside the Sidebar */
+.sidebar-footer {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
 .content {
     position: fixed;
     text-align: center;

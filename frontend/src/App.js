@@ -1,43 +1,29 @@
 // App.js
-import React, { useEffect } from "react";
-import Title from "./components/Title";
-import LanguageSelector from "./components/LanguageSelector";
-import CustomOrb from "./components/CustomOrb";
-import AudioVisualizer from "./components/AudioVisualizer";
-import Chat from "./components/Chat";
-import useLanguageStore from "./components/store/useLanguageStore";
-import useAudioStore from "./components/store/audioStore";
-import "./App.css";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
+import Home from "./pages/Home";
+import CallAI from "./pages/CallAI";
+import BookAppointment from "./pages/BookAppointment";
+import "./App.css";
 
 function App() {
-  const { selectedLanguage, setSelectedLanguage } = useLanguageStore();
-  const { isPlaying } = useAudioStore();
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
-  return (
-    <div className="App">
-      {/* Moved LanguageSelector into Sidebar */}
-      <Sidebar>
-        <LanguageSelector
-          selectedLanguage={selectedLanguage}
-          setSelectedLanguage={setSelectedLanguage}
-        />
-      </Sidebar>
-      <Title />
-      {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
-      <Chat />
-    </div>
-  );
+    return (
+        <Router>
+            <div className="App">
+                <Sidebar />
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/call-ai" element={<CallAI />} />
+                    <Route path="/book-appointment" element={<BookAppointment />} />
+                </Routes>
+            </div>
+        </Router>
+    );
 }
 
 export default App;
+
 
 
 
