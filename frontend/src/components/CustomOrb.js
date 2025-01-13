@@ -5,8 +5,8 @@ const CustomOrb = () => {
   return (
     <div className='customOrb'
       style={{
-        width: '500px',
-        height: '500px',
+        width: '850px',
+        height: '850px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
