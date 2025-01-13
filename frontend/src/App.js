@@ -5,10 +5,10 @@ import LanguageSelector from "./components/LanguageSelector";
 import CustomOrb from "./components/CustomOrb";
 import AudioVisualizer from "./components/AudioVisualizer";
 import Chat from "./components/Chat";
-import Navbar from "./components/Navbar";
 import useLanguageStore from "./components/store/useLanguageStore";
 import useAudioStore from "./components/store/audioStore";
 import "./App.css";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   const { selectedLanguage, setSelectedLanguage } = useLanguageStore();
@@ -23,19 +23,22 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar />
+      {/* Moved LanguageSelector into Sidebar */}
+      <Sidebar>
+        <LanguageSelector
+          selectedLanguage={selectedLanguage}
+          setSelectedLanguage={setSelectedLanguage}
+        />
+      </Sidebar>
       <Title />
       {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
       <Chat />
-      <LanguageSelector
-        selectedLanguage={selectedLanguage}
-        setSelectedLanguage={setSelectedLanguage}
-      />
     </div>
   );
 }
 
 export default App;
+
 
 
 
