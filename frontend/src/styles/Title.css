@@ -5,8 +5,9 @@
 }
 
 .title {
-  min-height: 100vh;
   display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   font-size: 3rem;
   color: white;
@@ -17,7 +18,8 @@
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  margin-top: 66px; /* Push title lower from the top */
+  margin-top: 0px; /* Push title lower from the top */
+  margin-left: 5%;
 }
 
 /* Animation */

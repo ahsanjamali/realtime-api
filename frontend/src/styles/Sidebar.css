@@ -29,12 +29,12 @@
 }
 
 .sidebar:hover:not(.open) {
-    width: 290px;
+    width: 320px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); 
 }
 
 .sidebar.open {
-    width: 290px; 
+    width: 320px; 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);  
 }
 
@@ -57,6 +57,7 @@
     object-fit: cover;
     transition: width 0.3s ease, height 0.3s ease;
     border: none;
+    background: none;
 }
 
 .sidebar .profile span {
@@ -68,8 +69,8 @@
 
 .sidebar.open img,
 .sidebar:hover img {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
 }
 
 .sidebar.open .profile span,
