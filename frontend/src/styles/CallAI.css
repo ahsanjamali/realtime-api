@@ -18,7 +18,7 @@
     position: absolute;
     bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-80%);
 }
 
 .demo__card__mic:hover {

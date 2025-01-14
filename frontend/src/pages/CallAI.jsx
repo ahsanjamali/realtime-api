@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
+import Microphone from "../components/Microphone"; // Importing the Microphone component
 import "../styles/CallAI.css";
+
 const CallAI = () => {
   useEffect(() => {
     let animating = false;
@@ -134,8 +136,9 @@ const CallAI = () => {
                 <p className="demo__card__name">Agent {item}</p>
                 <p className="demo__card__role">Role: AI Assistant</p>
               </div>
+              {/* Replacing Font Awesome icon with Microphone component */}
               <div className="demo__card__mic">
-                <i className="fas fa-microphone"></i>
+                <Microphone />
               </div>
               <div className="demo__card__drag"></div>
             </div>
