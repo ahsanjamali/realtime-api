@@ -8,7 +8,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  position: absolute;
+  position: fixed;
+  top: 5%; /* Fixed at the top */
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 3rem;
   color: white;
   font-family: "Bebas Neue", sans-serif;
@@ -18,9 +21,8 @@
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  margin-top: 0px; /* Push title lower from the top */
-  margin-left: 5%;
 }
+
 
 /* Animation */
 @keyframes glow {
