@@ -19,7 +19,7 @@ const Home = () => {
 
     return (
         <div className="home-container">
-            <Title />
+            <Title  pageIndex={0}/>
             {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
             <Chat />
             

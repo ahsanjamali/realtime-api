@@ -1,9 +1,11 @@
 import React from 'react';
 import '../styles/Title.css';
 
-const Title = () => {
+const Title = ({ pageIndex }) => {
+  const titles = ['USMLE Medical License Exam Assistant', 'Call The AI Agent', 'Book An Appointment'];
+
   return (
-    <h1 className='title'>US Medical License Exam Assistant</h1>
+    <h1 className='title'>{titles[pageIndex]}</h1>
   );
 };
 
