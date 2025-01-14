@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ChatInputWidget from "./ChatInputWidget";
 import useAudioStore from "./store/audioStore";
+import ReactMarkdown from "react-markdown";
 import "../styles/Chat.css";
 
 const Chat = () => {
@@ -35,19 +36,15 @@ const Chat = () => {
       setLoading(true);
 
       try {
-        const response = await axios.post("https://voiceassistantflaskbackend.onrender.com/generate", {
-          input: data.text,
-        });
+        const response = await axios.post(
+          "https://private-backend-repo.onrender.com/generate",
+          { input: data.text }
+        );
 
         const { response: botResponse, audio } = response.data;
 
-        // Update chat with bot response
-        setChats((prevChats) => [
-          ...prevChats,
-          { msg: botResponse, who: "bot" },
-        ]);
+        setChats((prevChats) => [...prevChats, { msg: botResponse, who: "bot" }]);
 
-        // Pass audio to Zustand store for playback
         if (audio) {
           const audioBlob = base64ToBlob(audio, "audio/mp3");
           const audioUrl = URL.createObjectURL(audioBlob);
@@ -57,10 +54,7 @@ const Chat = () => {
         console.error("Error fetching response from /generate:", error);
         setChats((prevChats) => [
           ...prevChats,
-          {
-            msg: "Sorry, I couldn't process your request. Please try again.",
-            who: "bot",
-          },
+          { msg: "Sorry, I couldn't process your request. Please try again.", who: "bot" },
         ]);
       } finally {
         setLoading(false);
@@ -92,23 +86,23 @@ const Chat = () => {
             <div key={index} className={`chat-message ${chat.who}`}>
               {chat.who === "bot" && (
                 <figure className="avatar">
-                  <img
-                    src="./avatar.gif"
-                    alt="avatar"
-                  />
+                  <img src="./avatar.gif" alt="avatar" />
                 </figure>
               )}
-              <div className="message-text">{chat.msg}</div>
+              <div className="message-text">
+                {chat.who === "bot" ? (
+                  <ReactMarkdown>{chat.msg}</ReactMarkdown>
+                ) : (
+                  chat.msg
+                )}
+              </div>
             </div>
           ))}
 
           {loading && (
             <div className="chat-message loading">
               <figure className="avatar">
-                <img
-                  src="./avatar.gif"
-                  alt="avatar"
-                />
+                <img src="./avatar.gif" alt="avatar" />
               </figure>
               <div
                 style={{ padding: "5px", display: "flex", alignItems: "center" }}
