@@ -6,6 +6,8 @@ import AudioVisualizer from "../components/AudioVisualizer";
 import Chat from "../components/Chat";
 import useAudioStore from "../components/store/audioStore";
 
+
+
 const Home = () => {
     const { isPlaying } = useAudioStore();
    
@@ -21,6 +23,7 @@ const Home = () => {
         <div className="home-container">
             <Title  pageIndex={0}/>
             {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
+
             <Chat />
             
             {/* ✅ Displaying the selected language from the Sidebar */}

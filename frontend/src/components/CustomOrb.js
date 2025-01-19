@@ -11,6 +11,7 @@ const CustomOrb = () => {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'none', // Ensure transparent background
+        
       }}
     >
       <Player

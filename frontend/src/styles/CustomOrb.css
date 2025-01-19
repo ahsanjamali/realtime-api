@@ -4,25 +4,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
+  margin: 20px auto; /* Adjusted margin to place it below the title */
   width: 400px; /* Default size for desktop */
-  height: 400px; /* Default size for desktop */
+  height: 400px;
   border-radius: 50%;
   position: relative;
+  border: 2px solid #000; /* Optional border for visibility */
 }
 
 /* Media Queries for Responsiveness */
-@media (max-width: 768px) { /* Tablet */
+@media (max-width: 768px) {
   .customOrb {
-    width: 250px; /* Smaller size for tablets */
-    height: 250px;
+      width: 250px;
+      height: 250px;
   }
 }
 
-@media (max-width: 480px) { /* Mobile */
+@media (max-width: 480px) {
   .customOrb {
-    width: 150px; /* Smaller size for mobile */
-    height: 150px;
+      width: 150px;
+      height: 150px;
   }
 }
 
