@@ -10,7 +10,6 @@ const AudioVisualizer = () => {
 
   useEffect(() => {
     if (!audioUrl) return;
-
     const canvas = canvasRef.current;
     const audio = new Audio(audioUrl); // Create a new Audio element dynamically
     audioRef.current = audio;
