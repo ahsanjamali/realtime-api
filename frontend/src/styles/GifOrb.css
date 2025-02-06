@@ -1,0 +1,18 @@
+.gif-orb-container {
+    background: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto; /* Adjusted margin to place it below the title */
+  width: 400px; /* Default size for desktop */
+  height: 400px;
+  border-radius: 50%;
+  position: relative;
+  border: 2px solid #000; /* Optional border for visibility */
+  }
+  
+  .gif-orb {
+    width: 400px; /* Adjust size as needed */
+    height: 400px;
+  }
+  

@@ -147,7 +147,7 @@
 }
 
 .chat-message.me .message-text {
-  background: linear-gradient(120deg, #248a52, #257287);
+  background: linear-gradient(145deg, #00B0F0, #00D4FF);
   color: #fff;
   border-radius: 10px 10px 0 10px;
 }

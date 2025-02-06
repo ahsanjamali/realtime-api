@@ -17,7 +17,7 @@ const CustomOrb = () => {
       <Player
         autoplay
         loop
-        src="/animations.json" // Correctly reference the JSON file in the public folder
+        src="/anim.json" // Correctly reference the JSON file in the public folder
         style={{
           width: '100%',
           height: '100%',

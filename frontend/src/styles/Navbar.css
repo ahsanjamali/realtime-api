@@ -127,7 +127,7 @@ a {
 }
 
 .navItem:hover {
-    color: #007bff;
+    color: linear-gradient(145deg, #00B0F0, #00D4FF);
     text-decoration: underline;
     text-decoration-color: white;
     text-underline-offset: 4px;
