@@ -17,9 +17,8 @@
 .sidebar {
     width: 60px;
     height: 100vh; 
-    background: rgba(255, 255, 255, 0.1); /* Glassmorphic effect base */
-    backdrop-filter: blur(10px); 
-    -webkit-backdrop-filter: blur(10px); 
+    background: #fff;
+    color: #000;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.2); 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
@@ -42,7 +41,7 @@
     display: flex;
     align-items: center;
     padding: 20px 0;
-    color: white;
+    color: rgb(0, 0, 0);
     transition: padding 0.3s ease;
     width: 100%;
 }
@@ -89,15 +88,14 @@
     display: flex;
     align-items: center;
     padding: 20px 20px;
-    color: white;
+    color: rgb(0, 0, 0);
     cursor: pointer;
     transition: background 0.3s ease;
     border-radius: 8px;
 }
 
 .sidebar ul li:hover {
-    background: rgba(255, 255, 255, 0.2); 
-    backdrop-filter: blur(12px); 
+  background: #78e9ff;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -151,7 +149,7 @@
 }
 .nav-link {
     text-decoration: none;
-    color: white;
+    color: rgb(0, 0, 0);
     display: flex;
     align-items: center;
     padding: 10px;
@@ -159,7 +157,9 @@
     transition: background 0.3s ease;
 }
 
-
+.nav-link :hover & ul{
+    color: #fff;
+}
 
 /* ✅ Language Selector Footer Inside the Sidebar */
 .sidebar-footer {
@@ -200,7 +200,10 @@
 }
 .icon {
     font-size: 24px;
-    color: white;
+    color: rgb(0, 0, 0);
+}
+.icon:hover{
+    color: #fff;
 }
 /* Sidebar Footer for Language Selector Positioning */
 .sidebar-footer {

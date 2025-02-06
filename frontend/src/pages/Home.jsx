@@ -1,7 +1,8 @@
 // Home.jsx
 import React, { useEffect } from "react";
 import Title from "../components/Title";
-import CustomOrb from "../components/CustomOrb";
+//import CustomOrb from "../components/CustomOrb";
+import Orb from "../components/Orb";
 import AudioVisualizer from "../components/AudioVisualizer";
 import Chat from "../components/Chat";
 import useAudioStore from "../components/store/audioStore";
@@ -22,7 +23,7 @@ const Home = () => {
     return (
         <div className="home-container">
             <Title  pageIndex={0}/>
-            {isPlaying ? <AudioVisualizer /> : <CustomOrb />}
+            {isPlaying ? <AudioVisualizer /> : <Orb/>}
 
             <Chat />
             
