@@ -12,7 +12,6 @@ const Chat = () => {
   const [loading, setLoading] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const chatContentRef = useRef(null);
-
   const { setAudioUrl } = useAudioStore();
 
   const scrollToBottom = () => {
@@ -36,11 +35,8 @@ const Chat = () => {
       setLoading(true);
 
       try {
-        const response = await axios.post(
-          "https://private-backend-repo.onrender.com/generate",
-          { input: data.text }
-        );
-
+        // Ensure the URL here points to your new Flask backend.
+        const response = await axios.post("http://localhost:5000/generate", { input: data.text });
         const { response: botResponse, audio } = response.data;
 
         setChats((prevChats) => [...prevChats, { msg: botResponse, who: "bot" }]);
@@ -104,9 +100,7 @@ const Chat = () => {
               <figure className="avatar">
                 <img src="./avatar.gif" alt="avatar" />
               </figure>
-              <div
-                style={{ padding: "5px", display: "flex", alignItems: "center" }}
-              >
+              <div style={{ padding: "5px", display: "flex", alignItems: "center" }}>
                 <lottie-player
                   src="https://lottie.host/47000d95-a3cd-43b8-ba63-fc7b3216f1cf/6gPsoPB6JM.json"
                   style={{ width: "130px", height: "130px" }}
@@ -132,6 +126,7 @@ const Chat = () => {
 };
 
 export default Chat;
+
 
 
 
