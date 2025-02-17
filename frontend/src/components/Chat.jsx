@@ -36,7 +36,7 @@ const Chat = () => {
 
       try {
         // Ensure the URL here points to your new Flask backend.
-        const response = await axios.post("http://localhost:5000/generate", { input: data.text });
+        const response = await axios.post("https://voice-assistant-avatar-dsah-backend.onrender.com/generate", { input: data.text });
         const { response: botResponse, audio } = response.data;
 
         setChats((prevChats) => [...prevChats, { msg: botResponse, who: "bot" }]);
