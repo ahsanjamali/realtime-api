@@ -110,6 +110,7 @@
 .chat-message.bot {
   margin-left: 0.05rem;
   margin-right: 1rem;
+  margin-bottom: 4rem;
   justify-content: flex-start;
 }
 
