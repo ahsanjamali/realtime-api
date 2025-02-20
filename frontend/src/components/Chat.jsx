@@ -36,10 +36,15 @@ const Chat = () => {
 
       try {
         // Ensure the URL here points to your new Flask backend.
-        const response = await axios.post("https://voice-assistant-avatar-dsah-backend.onrender.com/generate", { input: data.text });
+        const response = await axios.post("http://127.0.0.1:5000/generate", {
+          input: data.text,
+        });
         const { response: botResponse, audio } = response.data;
 
-        setChats((prevChats) => [...prevChats, { msg: botResponse, who: "bot" }]);
+        setChats((prevChats) => [
+          ...prevChats,
+          { msg: botResponse, who: "bot" },
+        ]);
 
         if (audio) {
           const audioBlob = base64ToBlob(audio, "audio/mp3");
@@ -50,7 +55,10 @@ const Chat = () => {
         console.error("Error fetching response from /generate:", error);
         setChats((prevChats) => [
           ...prevChats,
-          { msg: "Sorry, I couldn't process your request. Please try again.", who: "bot" },
+          {
+            msg: "Sorry, I couldn't process your request. Please try again.",
+            who: "bot",
+          },
         ]);
       } finally {
         setLoading(false);
@@ -67,7 +75,9 @@ const Chat = () => {
     const byteArrays = [];
     for (let offset = 0; offset < byteCharacters.length; offset += 512) {
       const slice = byteCharacters.slice(offset, offset + 512);
-      const byteNumbers = new Array(slice.length).fill().map((_, i) => slice.charCodeAt(i));
+      const byteNumbers = new Array(slice.length)
+        .fill()
+        .map((_, i) => slice.charCodeAt(i));
       const byteArray = new Uint8Array(byteNumbers);
       byteArrays.push(byteArray);
     }
@@ -100,7 +110,13 @@ const Chat = () => {
               <figure className="avatar">
                 <img src="./avatar.gif" alt="avatar" />
               </figure>
-              <div style={{ padding: "5px", display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  padding: "5px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 <lottie-player
                   src="https://lottie.host/47000d95-a3cd-43b8-ba63-fc7b3216f1cf/6gPsoPB6JM.json"
                   style={{ width: "130px", height: "130px" }}
@@ -126,8 +142,3 @@ const Chat = () => {
 };
 
 export default Chat;
-
-
-
-
-

@@ -24,7 +24,7 @@ load_dotenv()
 
 # Initialize Flask App
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://voice-assistant-avatar-dsah.onrender.com"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Initialize logger
 logging.basicConfig(level=logging.INFO)
