@@ -14,6 +14,7 @@ import base64
 import os
 import orjson
 import logging
+from flask_socketio import SocketIO, emit
 
 
 
@@ -25,6 +26,12 @@ load_dotenv()
 # Initialize Flask App
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+socketio = SocketIO(app, 
+                   cors_allowed_origins="http://localhost:3000",
+                   async_mode='threading',
+                   logger=True,   # Enable socketio logging
+                   engineio_logger=True  # Enable engineio logging
+                   )
 
 # Initialize logger
 logging.basicConfig(level=logging.INFO)
@@ -90,39 +97,51 @@ def jsonify_fast(data):
     return app.response_class(response=orjson.dumps(data), mimetype="application/json")
 
 # Generate endpoint
-@app.route('/generate', methods=['POST'])
-def generate():
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('message')
+def handle_message(data):
+    print(f"Message handler triggered with data: {data}")  # Keep this for debugging
     try:
-        user_input = request.json.get('input')
-        app.logger.info(f"User input: {user_input}")
+        print(f"Received message from client: {data}")  # Keep this for debugging
+        user_input = data.get('input')
         
         # Update chat history
         chat_history.append(HumanMessage(content=user_input))
-
-        # Generate response synchronously
+        
+        # Emit "processing" status
+        emit('status', {'status': 'processing'})
+        
+        # Generate response
         response = conversation_rag_chain.invoke({
             "chat_history": chat_history,
             "input": user_input,
         })
         response_content = response.get("answer", "")
-        app.logger.info(f"response_content: {response_content}")
-        chat_history.append(AIMessage(content=response_content))
-
-        # Generate audio
+        print(f"Generated response text: {response_content}")  # Log just the text response
+        
+        # Generate audio (without logging the base64 data)
         audio_base64 = text_to_speech_base64(response_content)
 
-        # Return response and audio
-        return jsonify_fast({
-            "response": response_content,
-            "audio": audio_base64
+        # Emit response and audio (without logging)
+        emit('response', {
+            'response': response_content,
+            'audio': audio_base64
         })
+
     except Exception as e:
-        app.logger.error(f"Error in /generate endpoint: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"Error in handle_message: {str(e)}")
+        emit('error', {'error': str(e)})
 
 # Run Flask App with hypercorn or similar
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    socketio.run(app, debug=True, port=5000)
 
 
 
