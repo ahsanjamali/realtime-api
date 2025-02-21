@@ -105,7 +105,6 @@ def generate():
             "input": user_input,
         })
         response_content = response.get("answer", "")
-        app.logger.info(f"response_content: {response_content}")
         chat_history.append(AIMessage(content=response_content))
 
         # Generate audio
