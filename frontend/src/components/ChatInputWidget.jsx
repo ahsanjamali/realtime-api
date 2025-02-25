@@ -14,7 +14,9 @@ const ChatInputWidget = ({ onSendMessage }) => {
 
   const { selectedLanguage } = useLanguageStore(); // Access selected language from Zustand
 
-  const { startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({ audio: true });
+  const { startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder(
+    { audio: true }
+  );
 
   const sendAudioBlobAsBytes = useCallback(
     async (audioBlob) => {
@@ -44,7 +46,8 @@ const ChatInputWidget = ({ onSendMessage }) => {
   }, [mediaBlobUrl, sendAudioBlobAsBytes]);
 
   const startTranscription = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.error("SpeechRecognition not supported in this browser.");
       return;
@@ -103,7 +106,9 @@ const ChatInputWidget = ({ onSendMessage }) => {
 
       textAreaRef.current.style.height = "25px"; // Reset height to auto before recalculating
       textAreaRef.current.value = inputValue || textAreaRef.current.value; // Ensure the height adjusts based on content
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeightl/2}px` // Adjust height based on content
+      textAreaRef.current.style.height = `${
+        textAreaRef.current.scrollHeightl / 2
+      }px`; // Adjust height based on content
     }
   };
 
@@ -124,15 +129,27 @@ const ChatInputWidget = ({ onSendMessage }) => {
 
   const handleSendMessage = () => {
     if (inputText.trim().length > 0) {
-      onSendMessage({ text: inputText }); // Send text message to parent
+      onSendMessage({ text: inputText });
       setInputText("");
-      adjustTextAreaHeight("", true); // Reset text area height
+      adjustTextAreaHeight("", true);
     }
 
     if (isRecording) {
       stopRecording();
       stopTranscription();
       setIsRecording(false);
+    }
+  };
+
+  const handleAudioRecording = async (audioBlob) => {
+    if (!audioBlob) return;
+
+    try {
+      const buffer = await audioBlob.arrayBuffer();
+      const audioArray = Array.from(new Uint8Array(buffer));
+      onSendMessage({ audioFile: audioArray });
+    } catch (error) {
+      console.error("Error handling audio recording:", error);
     }
   };
 
