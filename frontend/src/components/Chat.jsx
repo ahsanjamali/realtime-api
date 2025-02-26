@@ -63,6 +63,31 @@ const Chat = () => {
     });
   };
 
+  // Add this function to handle search
+  const handleSearch = async (query) => {
+    try {
+      const response = await fetch("http://localhost:8813/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      const data = await response.json();
+      return {
+        success: true,
+        results: data.results,
+      };
+    } catch (error) {
+      console.error("Search error:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
   // Create data channel handler
   const createDataChannel = (pc) => {
     const channel = pc.createDataChannel("response");
@@ -74,9 +99,14 @@ const Chat = () => {
 
     channel.addEventListener("message", async (ev) => {
       const msg = JSON.parse(ev.data);
-      console.log("Received message type:", msg.type, "Full message:", msg);
+      console.log("Received message type:", msg.type);
 
       switch (msg.type) {
+        case "session.created":
+        case "session.updated":
+          console.log(`Session ${msg.type.split(".")[1]}:`, msg.event_id);
+          break;
+
         case "conversation.item.input_audio_transcription.completed":
           addMessageToChat(msg.transcript, true);
           break;
@@ -125,7 +155,38 @@ const Chat = () => {
           break;
 
         case "response.function_call_arguments.done":
-          // Handle function calls if needed
+          // Handle function calls
+          if (msg.name === "search_hospital") {
+            console.log(`Calling search function with args:`, msg.arguments);
+            console.log(
+              "DataChannel state before search:",
+              channel?.readyState
+            );
+            const args = JSON.parse(msg.arguments);
+            const result = await handleSearch(args.query);
+            console.log("DataChannel state after search:", channel?.readyState);
+            console.log("Result", result);
+
+            // Send function call result back
+            const event = {
+              type: "conversation.item.create",
+              item: {
+                type: "function_call_output",
+                call_id: msg.call_id,
+                output: JSON.stringify(result),
+              },
+            };
+            channel.send(JSON.stringify(event));
+
+            // Request continuation of the response
+            const createResponse = {
+              type: "response.create",
+              response: {
+                modalities: ["text", "audio"],
+              },
+            };
+            channel.send(JSON.stringify(createResponse));
+          }
           break;
 
         default:
@@ -142,13 +203,30 @@ const Chat = () => {
       type: "session.update",
       session: {
         instructions:
-          "You are a Patient Virtual Assistant for Doctor Samir Abbas Hospital in Jeddah...",
+          "You are a Patient Virtual Assistant for Doctor Samir Abbas Hospital in Jeddah. In the tools you have the search tool to search through the knowledge base of hospital to find relevant information. Respond to the user in a friendly and helpful manner.",
         modalities: ["text", "audio"],
         turn_detection: null,
         input_audio_transcription: {
           model: "whisper-1",
         },
-        // Add other configuration as needed
+        tools: [
+          {
+            type: "function",
+            name: "search_hospital",
+            description:
+              "Search through the knowledge base of hospital to find relevant information",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The search query to find relevant information",
+                },
+              },
+              required: ["query"],
+            },
+          },
+        ],
       },
     };
     channel.send(JSON.stringify(event));
@@ -163,11 +241,13 @@ const Chat = () => {
       return;
     }
 
-    if (data.text && data.text.trim().length > 0) {
-      // Add user message to chat immediately
+    if (data.type === "session.update") {
+      // Handle VAD updates
+      dataChannel.send(JSON.stringify(data));
+    } else if (data.text && data.text.trim().length > 0) {
+      // Handle text messages (existing code)
       addMessageToChat(data.text, true);
 
-      // Create conversation item with text
       const createMessage = {
         type: "conversation.item.create",
         item: {
@@ -182,10 +262,8 @@ const Chat = () => {
         },
       };
 
-      // Send the message
       dataChannel.send(JSON.stringify(createMessage));
 
-      // Request response from the model
       const createResponse = {
         type: "response.create",
         response: {
@@ -255,8 +333,25 @@ const Chat = () => {
     };
   }, []);
 
-  const toggleChatVisibility = () => {
-    setIsChatVisible((prevState) => !prevState);
+  const toggleChatVisibility = async () => {
+    const newVisibility = !isChatVisible;
+    setIsChatVisible(newVisibility);
+
+    // Start WebRTC connection when chat is opened
+    if (newVisibility && !isWebRTCActive) {
+      await startWebRTC();
+    } else if (!newVisibility) {
+      // Cleanup WebRTC when chat is collapsed
+      if (peerConnection) {
+        peerConnection.close();
+      }
+      if (dataChannel) {
+        dataChannel.close();
+      }
+      setPeerConnection(null);
+      setDataChannel(null);
+      setIsWebRTCActive(false);
+    }
   };
 
   // const base64ToBlob = (base64, mimeType) => {
@@ -274,10 +369,7 @@ const Chat = () => {
   // };
 
   return (
-    <>
-      <button onClick={startWebRTC} disabled={isWebRTCActive}>
-        {isWebRTCActive ? "Connected" : "Connect"}
-      </button>
+    <div className="chat-wrapper">
       {isChatVisible && (
         <div className="chat-content" ref={chatContentRef}>
           {chats.map((chat, index) => (
@@ -329,7 +421,7 @@ const Chat = () => {
           {isChatVisible ? "-" : "+"}
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
