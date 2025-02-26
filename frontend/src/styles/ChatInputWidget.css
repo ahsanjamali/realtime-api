@@ -10,8 +10,8 @@
   width: 27%;
   position: fixed; /* Ensure it's fixed at the bottom */
   bottom: 10px;
-  left: 82%;
-  transform: translateX(-38%);
+  left: 81%; /* Changed from 82% to move it more to the right */
+  transform: translateX(-50%);
   border: none; /* Remove white border */
 }
 

@@ -415,12 +415,12 @@ const Chat = () => {
           )}
         </div>
       )}
-      <div className="chat-footer">
+      <div className={`chat-footer ${isChatVisible ? "visible" : ""}`}>
         <ChatInputWidget onSendMessage={handleNewMessage} />
-        <button className="toggle-button" onClick={toggleChatVisibility}>
-          {isChatVisible ? "-" : "+"}
-        </button>
       </div>
+      <button className="toggle-button" onClick={toggleChatVisibility}>
+        {isChatVisible ? "-" : "+"}
+      </button>
     </div>
   );
 };

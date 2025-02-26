@@ -59,6 +59,14 @@
   z-index: 10;
   justify-content: center;
   border-radius: 0 0 16px 16px;
+  opacity: 0; /* Hide by default */
+  visibility: hidden; /* Hide by default */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.chat-footer.visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Toggle Button */
@@ -71,29 +79,19 @@
   width: 38px;
   border: none;
   border-radius: 50%;
-  transform: translateX(30%);
   bottom: 22px;
-  margin-left: 80px;
-  right: 30%;
+  right: 20px;
   font-size: 1.8rem;
+  background: linear-gradient(145deg, #00b0f0, #00d4ff);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 0 0 3px linear-gradient(145deg, #00b0f0e3, #00d5ff); /* Blue circle */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 11;
+  transition: transform 0.3s ease;
 }
 
 .toggle-button:hover {
-  background: none;
-  color: #fff;
-}
-
-.toggle-button::before {
-  content: '';
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(0, 176, 240, 0.5); /* Semi-transparent blue background */
-  z-index: -1;
+  transform: scale(1.1);
 }
 
 /* Chat Messages */
@@ -148,7 +146,7 @@
 }
 
 .chat-message.me .message-text {
-  background: linear-gradient(145deg, #00B0F0, #00D4FF);
+  background: linear-gradient(145deg, #00b0f0, #00d4ff);
   color: #fff;
   border-radius: 10px 10px 0 10px;
 }
