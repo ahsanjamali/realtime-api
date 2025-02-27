@@ -3,10 +3,11 @@
   position: absolute;
   right: 0%;
   top: 10px;
-  bottom: 0%;
+  bottom: 80px;
   width: 33%;
   overflow-y: auto;
   padding: 1rem;
+  padding-bottom: 2rem;
   border-radius: 16px;
   background-color: #fff;
   transition: max-height 0.3s ease-in-out;
@@ -49,18 +50,18 @@
 /* Chat Footer (Always Fixed) */
 .chat-footer {
   position: fixed;
-  bottom: 0;
+  bottom: 20px;
   width: 35%;
   background: transparent;
   padding: 0rem;
   display: flex;
-  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   align-items: center;
   z-index: 10;
   justify-content: center;
   border-radius: 0 0 16px 16px;
-  opacity: 0; /* Hide by default */
-  visibility: hidden; /* Hide by default */
+  opacity: 0;
+  visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
@@ -108,7 +109,7 @@
 .chat-message.bot {
   margin-left: 0.05rem;
   margin-right: 1rem;
-  margin-bottom: 4rem;
+  margin-bottom: 1rem;
   justify-content: flex-start;
 }
 
@@ -193,12 +194,13 @@
 @media screen and (max-width: 768px) {
   .chat-content {
     padding: 0.5rem;
-    padding-bottom: 5rem;
+    padding-bottom: 90px;
     width: 100%;
+    bottom: 70px;
   }
 
   .chat-footer {
-    padding: 0.5rem;
+    bottom: 15px;
     width: 100%;
   }
 
@@ -220,12 +222,13 @@
 @media screen and (max-width: 480px) {
   .chat-content {
     padding: 0.5rem;
-    padding-bottom: 5rem;
+    padding-bottom: 90px;
     width: 100%;
+    bottom: 70px;
   }
 
   .chat-footer {
-    padding: 0.5rem;
+    bottom: 15px;
     width: 100%;
   }
 
