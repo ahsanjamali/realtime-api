@@ -287,13 +287,16 @@ const Chat = () => {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const response = await fetch("http://localhost:8813/api/rtc-connect", {
-        method: "POST",
-        body: offer.sdp,
-        headers: {
-          "Content-Type": "application/sdp",
-        },
-      });
+      const response = await fetch(
+        "https://realtime-api-0j11.onrender.com/api/rtc-connect",
+        {
+          method: "POST",
+          body: offer.sdp,
+          headers: {
+            "Content-Type": "application/sdp",
+          },
+        }
+      );
 
       const answer = await response.text();
       await pc.setRemoteDescription({ sdp: answer, type: "answer" });
