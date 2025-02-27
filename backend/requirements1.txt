@@ -1,9 +1,0 @@
-flask
-flask-cors
-requests
-python-dotenv
-langchain-openai
-langchain-qdrant
-qdrant-client
-python-logging
-gunicorn
