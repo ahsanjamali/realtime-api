@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
 import "../styles/ChatInputWidget.css";
 
 const ChatInputWidget = ({ onSendMessage }) => {
@@ -48,11 +49,12 @@ const ChatInputWidget = ({ onSendMessage }) => {
     if (inputText.trim().length > 0) {
       handleSendMessage();
     } else {
-      setIsRecording(!isRecording);
+      const newRecordingState = !isRecording;
+      setIsRecording(newRecordingState);
       onSendMessage({
         type: "session.update",
         session: {
-          turn_detection: isRecording ? null : { type: "server_vad" },
+          turn_detection: newRecordingState ? { type: "server_vad" } : null,
         },
       });
     }
@@ -75,7 +77,13 @@ const ChatInputWidget = ({ onSendMessage }) => {
         }`}
         onClick={handleButtonClick}
       >
-        {inputText.trim().length > 0 ? <SendIcon /> : <MicIcon />}
+        {inputText.trim().length > 0 ? (
+          <SendIcon />
+        ) : isRecording ? (
+          <MicIcon />
+        ) : (
+          <MicOffIcon />
+        )}
       </button>
     </div>
   );

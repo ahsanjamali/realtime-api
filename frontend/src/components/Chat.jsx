@@ -18,6 +18,8 @@ const Chat = () => {
   const [isWebRTCActive, setIsWebRTCActive] = useState(false);
   const [peerConnection, setPeerConnection] = useState(null);
   const [dataChannel, setDataChannel] = useState(null);
+  const [micStream, setMicStream] = useState(null);
+  const [isMicMuted, setIsMicMuted] = useState(true);
 
   const scrollToBottom = () => {
     if (chatContentRef.current) {
@@ -250,7 +252,67 @@ const Chat = () => {
     channel.send(JSON.stringify(event));
   };
 
-  // Handle new message from ChatInputWidget
+  // Modify startWebRTC to mute the mic by default
+  const startWebRTC = async () => {
+    const pc = new RTCPeerConnection();
+    setPeerConnection(pc);
+
+    pc.ontrack = (event) => {
+      const el = document.createElement("audio");
+      el.srcObject = event.streams[0];
+      el.autoplay = true;
+      el.style.display = "none";
+      document.body.appendChild(el);
+    };
+
+    createDataChannel(pc);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicStream(stream);
+
+      // Mute the microphone by default
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = false;
+      });
+
+      stream
+        .getTracks()
+        .forEach((track) =>
+          pc.addTransceiver(track, { direction: "sendrecv" })
+        );
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const response = await fetch("http://localhost:8813/api/rtc-connect", {
+        method: "POST",
+        body: offer.sdp,
+        headers: {
+          "Content-Type": "application/sdp",
+        },
+      });
+
+      const answer = await response.text();
+      await pc.setRemoteDescription({ sdp: answer, type: "answer" });
+
+      setIsWebRTCActive(true);
+    } catch (error) {
+      console.error("Error starting WebRTC:", error);
+    }
+  };
+
+  // Add a function to toggle microphone
+  const toggleMicrophone = (enabled) => {
+    setIsMicMuted(!enabled);
+    if (micStream) {
+      micStream.getAudioTracks().forEach((track) => {
+        track.enabled = enabled;
+      });
+    }
+  };
+
+  // Handle VAD activation from ChatInputWidget
   const handleNewMessage = async (data) => {
     setIsChatVisible(true);
 
@@ -262,6 +324,10 @@ const Chat = () => {
     if (data.type === "session.update") {
       // Handle VAD updates
       dataChannel.send(JSON.stringify(data));
+
+      // Enable/disable microphone based on VAD state
+      const vadEnabled = data.session.turn_detection !== null;
+      toggleMicrophone(vadEnabled);
     } else if (data.text && data.text.trim().length > 0) {
       // Handle text messages (existing code)
       addMessageToChat(data.text, true);
@@ -294,49 +360,6 @@ const Chat = () => {
       // Handle audio file if needed
       // Add a temporary message showing that audio is being processed
       addMessageToChat("🎤 Audio message sent...", true);
-    }
-  };
-
-  // Add WebRTC controls
-  const startWebRTC = async () => {
-    const pc = new RTCPeerConnection();
-    setPeerConnection(pc);
-
-    pc.ontrack = (event) => {
-      const el = document.createElement("audio");
-      el.srcObject = event.streams[0];
-      el.autoplay = true;
-      el.style.display = "none";
-      document.body.appendChild(el);
-    };
-
-    createDataChannel(pc);
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream
-        .getTracks()
-        .forEach((track) =>
-          pc.addTransceiver(track, { direction: "sendrecv" })
-        );
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const response = await fetch("http://localhost:8813/api/rtc-connect", {
-        method: "POST",
-        body: offer.sdp,
-        headers: {
-          "Content-Type": "application/sdp",
-        },
-      });
-
-      const answer = await response.text();
-      await pc.setRemoteDescription({ sdp: answer, type: "answer" });
-
-      setIsWebRTCActive(true);
-    } catch (error) {
-      console.error("Error starting WebRTC:", error);
     }
   };
 
