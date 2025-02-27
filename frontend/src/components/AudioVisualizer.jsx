@@ -3,26 +3,24 @@ import useAudioStore from "./store/audioStore";
 import "../styles/AudioVisualizer.css";
 
 const AudioVisualizer = () => {
-  const { audioUrl, stopAudio } = useAudioStore();
+  const { audioStream, stopAudio } = useAudioStore();
   const canvasRef = useRef(null);
-  const audioRef = useRef(null);
-  const audioContextRef = useRef(null); // Keep a reference to the AudioContext
+  const audioContextRef = useRef(null);
 
   useEffect(() => {
-    if (!audioUrl) return;
-    const canvas = canvasRef.current;
-    const audio = new Audio(audioUrl); // Create a new Audio element dynamically
-    audioRef.current = audio;
+    if (!audioStream) return;
 
-    // Create a new AudioContext if it doesn't already exist
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const canvas = canvasRef.current;
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
     audioContextRef.current = audioContext;
 
     const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audio);
+    const source = audioContext.createMediaStreamSource(audioStream);
 
     source.connect(analyser);
-    analyser.connect(audioContext.destination);
+    // Don't connect to destination as the audio is already playing
+    // analyser.connect(audioContext.destination);
 
     analyser.fftSize = 256;
     const bufferLength = analyser.frequencyBinCount;
@@ -58,7 +56,7 @@ const AudioVisualizer = () => {
           HEIGHT
         );
         gradient.addColorStop(0, "violet"); // Start color
-        gradient.addColorStop(1, "pink");  // End color
+        gradient.addColorStop(1, "pink"); // End color
 
         ctx.fillStyle = gradient;
         ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
@@ -69,32 +67,25 @@ const AudioVisualizer = () => {
 
     renderFrame();
 
-    // Play audio and handle cleanup on end
-    audio.play().catch((err) => {
-      console.error("Audio play failed:", err);
-    });
-
-    audio.onended = () => {
+    // Clean up when the stream ends
+    audioStream.addEventListener("inactive", () => {
       stopAudio();
       cancelAnimationFrame(animationFrameId);
       if (audioContext.state !== "closed") {
         audioContext.close();
       }
-    };
+    });
 
     return () => {
-      // Cleanup the animation and audio resources
       cancelAnimationFrame(animationFrameId);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
         audioContextRef.current.close();
       }
     };
-  }, [audioUrl, stopAudio]);
+  }, [audioStream, stopAudio]);
 
   return (
     <div className="audio-visualizer">
@@ -104,7 +95,3 @@ const AudioVisualizer = () => {
 };
 
 export default AudioVisualizer;
-
-
-
-

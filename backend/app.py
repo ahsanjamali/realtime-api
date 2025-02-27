@@ -1,41 +1,44 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_community.vectorstores.qdrant import Qdrant
-import qdrant_client
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from Template.promptAI import AI_prompt
-from elevenlabs import ElevenLabs
-import base64
+import requests
 import os
-import orjson
+import json
 import logging
+from dotenv import load_dotenv
+from langchain_openai import OpenAIEmbeddings
+from langchain_qdrant import Qdrant 
+import qdrant_client
 
-
-
-
-
-# Load environment variables
+# Load environment variables from .env file (optional)
 load_dotenv()
 
-# Initialize Flask App
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
-# Initialize logger
+# Configure CORS to allow all origins (for development only)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "https://realtime-api-frontend.onrender.com",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+# Configure logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Initialize ElevenLabs client
-elevenlabs_client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+# Configuration
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    logger.error("OPENAI_API_KEY environment variable not set.")
+    raise EnvironmentError("OPENAI_API_KEY environment variable not set.")
 
-# Initialize global variables
-chat_history = []
+OPENAI_SESSION_URL = "https://api.openai.com/v1/realtime/sessions"
+OPENAI_API_URL = "https://api.openai.com/v1/realtime"  # May vary based on requirements
+MODEL_ID = "gpt-4o-realtime-preview-2024-12-17"
+VOICE = "shimmer"  # Or other voices
+DEFAULT_INSTRUCTIONS = "You are a Patient Virtual Assistant for Doctor Samir Abbas Hospital in Jeddah..\n\nIn the tools you have the search tool to search through the knowledge base of hospital to find relevant information. Respond to the user in a friendly and helpful manner."
 
-# Qdrant configuration
 def get_vector_store():
     client = qdrant_client.QdrantClient(
         url=os.getenv("QDRANT_HOST"),
@@ -51,80 +54,125 @@ def get_vector_store():
 
 vector_store = get_vector_store()
 
-# Initialize LLM and chains
-llm = ChatOpenAI()
-retriever = vector_store.as_retriever()
 
-retriever_prompt = ChatPromptTemplate.from_messages([
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("user", "{input}"),
-    ("user", "Generate a search query based on the conversation."),
-])
-retriever_chain = create_history_aware_retriever(llm, retriever, retriever_prompt)
 
-conversational_prompt = ChatPromptTemplate.from_messages([
-    ("system", AI_prompt),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("user", "{input}"),
-])
-stuff_documents_chain = create_stuff_documents_chain(llm, conversational_prompt)
-conversation_rag_chain = create_retrieval_chain(retriever_chain, stuff_documents_chain)
+@app.route('/')
+def home():
+    return "Flask API is running!"
 
-# Text-to-speech using ElevenLabs
-def text_to_speech_base64(text):
-    """Convert text to speech and return audio as base64."""
+@app.route('/api/rtc-connect', methods=['POST'])
+def connect_rtc():
+    """
+    RTC connection endpoint for handling WebRTC SDP exchange and generating/using ephemeral tokens.
+    """
     try:
-        response = elevenlabs_client.text_to_speech.convert(
-            voice_id="Xb7hH8MSUJpSbSDYk0k2",  # Replace with your desired voice ID
-            model_id="eleven_multilingual_v2",
-            text=text,
+        # Step 1: Retrieve the client's SDP from the request body
+        client_sdp = request.get_data(as_text=True)
+        if not client_sdp:
+            logger.error("No SDP provided in the request body.")
+            return Response("No SDP provided in the request body.", status=400)
+
+        logger.info("Received SDP from client.")
+
+        # Step 2: Generate ephemeral API token
+        token_headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        token_payload = {
+            "model": MODEL_ID,
+            "voice": VOICE
+        }
+
+        logger.info("Requesting ephemeral token from OpenAI.")
+
+        token_response = requests.post(OPENAI_SESSION_URL, headers=token_headers, json=token_payload)
+
+        if not token_response.ok:
+            logger.error(f"Failed to obtain ephemeral token, status code: {token_response.status_code}, response: {token_response.text}")
+            return Response(f"Failed to obtain ephemeral token, status code: {token_response.status_code}", status=500)
+
+        token_data = token_response.json()
+        # Adjust the path based on the actual response structure
+        # Assuming the ephemeral token is located at `client_secret.value`
+        ephemeral_token = token_data.get('client_secret', {}).get('value', '')
+
+        if not ephemeral_token:
+            logger.error("Ephemeral token is empty or not found in the response.")
+            return Response("Ephemeral token is empty or not found in the response.", status=500)
+
+        logger.info("Ephemeral token obtained successfully.")
+
+        # Step 3: Perform SDP exchange with OpenAI's Realtime API using the ephemeral token
+        sdp_headers = {
+            "Authorization": f"Bearer {ephemeral_token}",
+            "Content-Type": "application/sdp"
+        }
+        sdp_params = {
+            "model": MODEL_ID,
+            "instructions": DEFAULT_INSTRUCTIONS,
+            "voice": VOICE
+        }
+
+        # Build the full URL with query parameters
+        sdp_url = requests.Request('POST', OPENAI_API_URL, params=sdp_params).prepare().url
+
+        logger.info(f"Sending SDP to OpenAI Realtime API at {sdp_url}")
+
+        sdp_response = requests.post(sdp_url, headers=sdp_headers, data=client_sdp)
+
+        if not sdp_response.ok:
+            logger.error(f"OpenAI API SDP exchange error, status code: {sdp_response.status_code}, response: {sdp_response.text}")
+            return Response(f"OpenAI API SDP exchange error, status code: {sdp_response.status_code}", status=500)
+
+        logger.info("SDP exchange with OpenAI completed successfully.")
+
+        # Step 4: Return OpenAI's SDP response to the client with the correct content type
+        return Response(
+            response=sdp_response.content,
+            status=200,
+            mimetype='application/sdp'
         )
-        audio_data = b"".join(chunk for chunk in response if chunk)
-        return base64.b64encode(audio_data).decode("utf-8")
+
     except Exception as e:
-        app.logger.error(f"Error generating audio with ElevenLabs: {e}")
-        return None
+        logger.exception("An error occurred during the RTC connection process.")
+        return Response(f"An error occurred: {str(e)}", status=500)
 
-# Efficient JSON response helper
-def jsonify_fast(data):
-    return app.response_class(response=orjson.dumps(data), mimetype="application/json")
-
-# Generate endpoint
-@app.route('/generate', methods=['POST'])
-def generate():
+# Search endpoint
+@app.route('/api/search', methods=['POST'])
+def search():
     try:
-        user_input = request.json.get('input')
-        app.logger.info(f"User input: {user_input}")
+        query = request.json.get('query')
+        if not query:
+            return jsonify({"error": "No query provided"}), 400
+
+        app.logger.info(f"Searching for: {query}")
         
-        # Update chat history
-        chat_history.append(HumanMessage(content=user_input))
+        # Use existing vector store to search
+        results = vector_store.similarity_search_with_score(
+            query,
+            k=3  # Adjust number of results as needed
+        )
 
-        # Generate response synchronously
-        response = conversation_rag_chain.invoke({
-            "chat_history": chat_history,
-            "input": user_input,
-        })
-        response_content = response.get("answer", "")
-        app.logger.info(f"response_content: {response_content}")
-        chat_history.append(AIMessage(content=response_content))
+        # Format results for the model
+        formatted_results = []
+        for doc, score in results:
+            formatted_results.append({
+                "content": doc.page_content,
+                "metadata": doc.metadata,
+                "relevance_score": float(score)  # Convert score to float for JSON serialization
+            })
 
-        # Generate audio
-        audio_base64 = text_to_speech_base64(response_content)
-
-        # Return response and audio
-        return jsonify_fast({
-            "response": response_content,
-            "audio": audio_base64
+        app.logger.info(f"Found {len(formatted_results)} results")
+        return jsonify({
+            "results": formatted_results
         })
     except Exception as e:
-        app.logger.error(f"Error in /generate endpoint: {e}")
+        app.logger.error(f"Search error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# Run Flask App with hypercorn or similar
+
+
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
-
-
-
-
-
+    # Ensure the server runs on port 8813
+    app.run(debug=True, port=8813)
