@@ -69,13 +69,16 @@ const Chat = () => {
   // Add this function to handle search
   const handleSearch = async (query) => {
     try {
-      const response = await fetch("http://localhost:8813/api/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
-      });
+      const response = await fetch(
+        "https://realtime-api-0j11.onrender.com/api/search",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query }),
+        }
+      );
 
       const data = await response.json();
       return {
