@@ -1,0 +1,8 @@
+flask==3.0.0
+flask-cors==4.0.0
+requests==2.31.0
+python-dotenv==1.0.0
+langchain-openai==0.0.5
+langchain-qdrant==0.0.2
+qdrant-client==1.7.0
+python-logging==0.4.9.6
