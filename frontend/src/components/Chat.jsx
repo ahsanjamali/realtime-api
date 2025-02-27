@@ -20,6 +20,7 @@ const Chat = () => {
   const [dataChannel, setDataChannel] = useState(null);
   const [micStream, setMicStream] = useState(null);
   const [isMicMuted, setIsMicMuted] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const scrollToBottom = () => {
     if (chatContentRef.current) {
@@ -222,8 +223,6 @@ const Chat = () => {
     const event = {
       type: "session.update",
       session: {
-        instructions:
-          "You are a Patient Virtual Assistant for Doctor Samir Abbas Hospital in Jeddah. In the tools you have the search tool to search through the knowledge base of hospital to find relevant information. Respond to the user in a friendly and helpful manner.",
         modalities: ["text", "audio"],
         turn_detection: null,
         input_audio_transcription: {
@@ -367,13 +366,15 @@ const Chat = () => {
   useEffect(() => {
     return () => {
       if (peerConnection) {
+        console.log("Closing peer connection");
         peerConnection.close();
       }
       if (dataChannel) {
+        console.log("Closing data channel");
         dataChannel.close();
       }
     };
-  }, []);
+  }, [peerConnection, dataChannel]);
 
   const toggleChatVisibility = async () => {
     const newVisibility = !isChatVisible;
@@ -381,7 +382,9 @@ const Chat = () => {
 
     // Start WebRTC connection when chat is opened
     if (newVisibility && !isWebRTCActive) {
+      setIsConnecting(true);
       await startWebRTC();
+      setIsConnecting(false);
     } else if (!newVisibility) {
       // Cleanup WebRTC when chat is collapsed
       if (peerConnection) {
@@ -458,7 +461,10 @@ const Chat = () => {
         </div>
       )}
       <div className={`chat-footer ${isChatVisible ? "visible" : ""}`}>
-        <ChatInputWidget onSendMessage={handleNewMessage} />
+        <ChatInputWidget
+          onSendMessage={handleNewMessage}
+          isDisabled={isConnecting}
+        />
       </div>
       <button className="toggle-button" onClick={toggleChatVisibility}>
         {isChatVisible ? "-" : "+"}

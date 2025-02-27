@@ -4,7 +4,7 @@ import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import "../styles/ChatInputWidget.css";
 
-const ChatInputWidget = ({ onSendMessage }) => {
+const ChatInputWidget = ({ onSendMessage, isDisabled }) => {
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const textAreaRef = useRef(null);
@@ -46,6 +46,8 @@ const ChatInputWidget = ({ onSendMessage }) => {
   };
 
   const handleButtonClick = () => {
+    if (isDisabled) return; // Don't do anything if disabled
+
     if (inputText.trim().length > 0) {
       handleSendMessage();
     } else {
@@ -65,19 +67,23 @@ const ChatInputWidget = ({ onSendMessage }) => {
       <textarea
         ref={textAreaRef}
         className="chat-input"
-        placeholder="Type a message..."
+        placeholder={isDisabled ? "Connecting..." : "Type a message..."}
         value={inputText}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         rows={1}
+        disabled={isDisabled}
       />
       <button
         className={`icon-btn ${
           isRecording && !inputText.trim() ? "recording" : ""
-        }`}
+        } ${isDisabled ? "disabled" : ""}`}
         onClick={handleButtonClick}
+        disabled={isDisabled}
       >
-        {inputText.trim().length > 0 ? (
+        {isDisabled ? (
+          <div className="loading-spinner"></div>
+        ) : inputText.trim().length > 0 ? (
           <SendIcon />
         ) : isRecording ? (
           <MicIcon />
