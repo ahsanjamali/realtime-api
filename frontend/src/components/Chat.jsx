@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 // import axios from "axios";
 import ChatInputWidget from "./ChatInputWidget";
-// import useAudioStore from "./store/audioStore";
+import useAudioStore from "./store/audioStore";
 import ReactMarkdown from "react-markdown";
 import "../styles/Chat.css";
 
@@ -12,7 +12,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const chatContentRef = useRef(null);
-  // const { setAudioUrl } = useAudioStore();
+  const { setAudioStream, stopAudio } = useAudioStore();
 
   // Add WebRTC state
   const [isWebRTCActive, setIsWebRTCActive] = useState(false);
@@ -153,6 +153,24 @@ const Chat = () => {
             });
           }
           break;
+        case "response.audio_transcript.delta":
+          console.log("Audio transcript delta received");
+          console.log("Peer connection state:", pc.connectionState);
+          const remoteStreams = pc.getRemoteStreams();
+          console.log("Remote streams:", remoteStreams);
+
+          if (remoteStreams.length > 0) {
+            setAudioStream(remoteStreams[0]);
+            console.log("Audio stream set from remote streams");
+          } else {
+            console.log("No remote streams found");
+          }
+          break;
+
+        case "output_audio_buffer.stopped":
+          console.log("Audio buffer stopped, stopping visualization");
+          stopAudio();
+          break;
 
         case "response.function_call_arguments.done":
           // Handle function calls
@@ -287,7 +305,8 @@ const Chat = () => {
     pc.ontrack = (event) => {
       const el = document.createElement("audio");
       el.srcObject = event.streams[0];
-      el.autoplay = el.controls = true;
+      el.autoplay = true;
+      el.style.display = "none";
       document.body.appendChild(el);
     };
 
