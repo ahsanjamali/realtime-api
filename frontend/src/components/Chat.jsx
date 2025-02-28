@@ -472,9 +472,10 @@ const Chat = () => {
           isDisabled={isConnecting}
         />
       </div>
-      <button className="toggle-button" onClick={toggleChatVisibility}>
-        {isChatVisible ? "-" : "+"}
-      </button>
+      <div className="toggle-button-container" onClick={toggleChatVisibility}>
+        {!isChatVisible && <span className="toggle-text">Let's chat!</span>}
+        <button className="toggle-button">{isChatVisible ? "-" : "+"}</button>
+      </div>
     </div>
   );
 };
