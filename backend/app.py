@@ -9,6 +9,16 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import Qdrant 
 import qdrant_client
 
+
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from Template.promptAI import AI_prompt
+from langchain_core.messages import AIMessage, HumanMessage
+
+
+
 # Load environment variables from .env file (optional)
 load_dotenv()
 
@@ -54,6 +64,25 @@ def get_vector_store():
 
 vector_store = get_vector_store()
 
+llm = ChatOpenAI()
+retriever = vector_store.as_retriever()
+
+chat_history = []
+
+retriever_prompt = ChatPromptTemplate.from_messages([
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("user", "{input}"),
+    ("user", "Generate a search query based on the conversation."),
+])
+retriever_chain = create_history_aware_retriever(llm, retriever, retriever_prompt)
+
+conversational_prompt = ChatPromptTemplate.from_messages([
+    ("system", AI_prompt),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("user", "{input}"),
+])
+stuff_documents_chain = create_stuff_documents_chain(llm, conversational_prompt)
+conversation_rag_chain = create_retrieval_chain(retriever_chain, stuff_documents_chain)
 
 
 @app.route('/')
@@ -139,6 +168,40 @@ def connect_rtc():
         return Response(f"An error occurred: {str(e)}", status=500)
 
 # Search endpoint
+# @app.route('/api/search', methods=['POST'])
+# def search():
+#     try:
+#         query = request.json.get('query')
+#         if not query:
+#             return jsonify({"error": "No query provided"}), 400
+
+#         app.logger.info(f"Searching for: {query}")
+        
+#         # Use existing vector store to search
+#         results = vector_store.similarity_search_with_score(
+#             query,
+#             k=1  # Adjust number of results as needed
+#         )
+
+#         # Format results for the model
+#         formatted_results = []
+#         for doc, score in results:
+#             formatted_results.append({
+#                 "content": doc.page_content,
+#                 "metadata": doc.metadata,
+#                 "relevance_score": float(score)  # Convert score to float for JSON serialization
+#             })
+
+#         app.logger.info(f"Found {len(formatted_results)} results")
+#         return jsonify({
+#             "results": formatted_results
+#         })
+#     except Exception as e:
+#         app.logger.error(f"Search error: {str(e)}")
+#         return jsonify({"error": str(e)}), 500
+    
+
+
 @app.route('/api/search', methods=['POST'])
 def search():
     try:
@@ -147,29 +210,28 @@ def search():
             return jsonify({"error": "No query provided"}), 400
 
         app.logger.info(f"Searching for: {query}")
-        
-        # Use existing vector store to search
-        results = vector_store.similarity_search_with_score(
-            query,
-            k=3  # Adjust number of results as needed
-        )
 
-        # Format results for the model
-        formatted_results = []
-        for doc, score in results:
-            formatted_results.append({
-                "content": doc.page_content,
-                "metadata": doc.metadata,
-                "relevance_score": float(score)  # Convert score to float for JSON serialization
-            })
+         # Update chat history
+        chat_history.append(HumanMessage(content=query))
 
-        app.logger.info(f"Found {len(formatted_results)} results")
+        # Generate response synchronously
+        response = conversation_rag_chain.invoke({
+            "chat_history": chat_history,
+            "input": query,
+        })
+        response_content = response.get("answer", "")
+        app.logger.info(f"response_content: {response_content}")
+        chat_history.append(AIMessage(content=response_content))
+
         return jsonify({
-            "results": formatted_results
+            "response": response_content
         })
     except Exception as e:
-        app.logger.error(f"Search error: {str(e)}")
+        app.logger.error(f"Error in /generate endpoint: {e}")
         return jsonify({"error": str(e)}), 500
+
+        
+       
 
 
 

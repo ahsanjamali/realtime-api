@@ -83,7 +83,13 @@ const Chat = () => {
       const data = await response.json();
       return {
         success: true,
-        results: data.results,
+        //results: data.results,
+        results: [
+          {
+            content: data.response || "No response found",
+            metadata: { source: "RAG System" },
+          },
+        ],
       };
     } catch (error) {
       console.error("Search error:", error);
