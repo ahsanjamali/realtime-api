@@ -1,5 +1,5 @@
 // Set the basic API address for communication with the backend server
-const baseUrl = "http://localhost:8813";
+const baseUrl = "https://realtime-api-0j11.onrender.com";
 // Flag indicating whether WebRTC is active, controls the enabling and disabling of connections
 let isWebRTCActive = false;
 // Create variables related to the WebRTC connection
