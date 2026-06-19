@@ -111,5 +111,4 @@ The app's frontend employs **glassmorphism**, characterized by:
 
 ---
 
-## License
-This project is licensed under the MIT License.
+
